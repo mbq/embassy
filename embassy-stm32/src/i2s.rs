@@ -577,7 +577,6 @@ impl<'d, W: Word> I2S<'d, W> {
 
                 w.set_mckoe(config.master_clock);
             });
-                info!("My mode is {:?} and function {:?}",config.mode,function);
                 //TODO: This breaks TX
                     w.regs.cfg2().modify(|w|{
                         w.set_comm(Comm::RECEIVER); 
