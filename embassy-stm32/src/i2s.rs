@@ -314,6 +314,33 @@ impl<'d, W: Word> I2S<'d, W> {
             Function::Receive,
         )
     }
+    
+    /// Create a receiver driver.
+    pub fn new_rxonly_nomck<T: Instance>(
+        peri: impl Peripheral<P = T> + 'd,
+        sd: impl Peripheral<P = impl MisoPin<T>> + 'd,
+        ws: impl Peripheral<P = impl WsPin<T>> + 'd,
+        ck: impl Peripheral<P = impl CkPin<T>> + 'd,
+        mck: impl Peripheral<P = impl MckPin<T>> + 'd,
+        rxdma: impl Peripheral<P = impl RxDma<T>> + 'd,
+        rxdma_buf: &'d mut [W],
+        freq: Hertz,
+        config: Config,
+    ) -> Self {
+        Self::new_inner(
+            peri,
+            None,
+            new_pin!(sd, AfType::input(Pull::None)),
+            ws,
+            ck,
+            None,
+            None,
+            new_dma!(rxdma).map(|d| (d, rxdma_buf)),
+            freq,
+            config,
+            Function::Receive,
+        )
+    }
 
     #[cfg(spi_v3)]
     /// Create a full duplex driver.
