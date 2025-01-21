@@ -303,7 +303,7 @@ impl<'d, W: Word> I2S<'d, W> {
         Self::new_inner(
             peri,
             None,
-            new_pin!(sd, AfType::output(OutputType::PushPull, Speed::VeryHigh)),
+            new_pin!(sd, AfType::input(Pull::None)),
             ws,
             ck,
             new_pin!(mck, AfType::output(OutputType::PushPull, Speed::VeryHigh)),
@@ -360,7 +360,7 @@ impl<'d, W: Word> I2S<'d, W> {
         Self::new_inner(
             peri,
             new_pin!(txsd, AfType::output(OutputType::PushPull, Speed::VeryHigh)),
-            new_pin!(rxsd, AfType::output(OutputType::PushPull, Speed::VeryHigh)),
+            new_pin!(rxsd, AfType::input(Pull::None)),
             ws,
             ck,
             new_pin!(mck, AfType::output(OutputType::PushPull, Speed::VeryHigh)),
@@ -528,12 +528,13 @@ impl<'d, W: Word> I2S<'d, W> {
         {
             #[cfg(spi_v3)]
             {
+                info!("SPE goes down!");
                 regs.cr1().modify(|w| w.set_spe(false));
 
                 reset_incompatible_bitfields::<T>();
             }
 
-            use stm32_metapac::spi::vals::{I2scfg, Odd};
+            use stm32_metapac::spi::vals::{I2scfg, Odd,Comm};
 
             // 1. Select the I2SDIV[7:0] bits in the SPI_I2SPR/SPI_I2SCFGR register to define the serial clock baud
             // rate to reach the proper audio sample frequency. The ODD bit in the
@@ -576,6 +577,11 @@ impl<'d, W: Word> I2S<'d, W> {
 
                 w.set_mckoe(config.master_clock);
             });
+                info!("My mode is {:?} and function {:?}",config.mode,function);
+                //TODO: This breaks TX
+                    w.regs.cfg2().modify(|w|{
+                        w.set_comm(Comm::RECEIVER); 
+                    });
 
             regs.i2scfgr().modify(|w| {
                 w.set_ckpol(config.clock_polarity.ckpol());
@@ -587,6 +593,7 @@ impl<'d, W: Word> I2S<'d, W> {
 
                 w.set_datlen(config.format.datlen());
                 w.set_chlen(config.format.chlen());
+
 
                 w.set_i2scfg(match (config.mode, function) {
                     (Mode::Master, Function::Transmit) => I2scfg::MASTER_TX,
@@ -647,7 +654,7 @@ impl<'d, W: Word> Drop for I2S<'d, W> {
 //
 // Equation can be rewritten as
 // division = i2s_clock/ (coef * Fs)
-//
+///
 // note: division = (2 * div) + odd = (div << 1) + odd
 // in other word, from bits point of view, division[8:1] = div[7:0] and division[0] = odd
 fn compute_baud_rate(i2s_clock: Hertz, request_freq: Hertz, mclk: bool, data_format: Format) -> (bool, u8) {
