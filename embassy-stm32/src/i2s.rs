@@ -526,10 +526,9 @@ impl<'d, W: Word> I2S<'d, W> {
 
         #[cfg(any(spi_v1, spi_v3, spi_f1))]
         {
+                regs.cr1().modify(|w| w.set_spe(false));
             #[cfg(spi_v3)]
             {
-                info!("SPE goes down!");
-                regs.cr1().modify(|w| w.set_spe(false));
 
                 reset_incompatible_bitfields::<T>();
             }
@@ -578,7 +577,7 @@ impl<'d, W: Word> I2S<'d, W> {
                 w.set_mckoe(config.master_clock);
             });
                 //TODO: This breaks TX
-                    w.regs.cfg2().modify(|w|{
+                    regs.cfg2().modify(|w|{
                         w.set_comm(Comm::RECEIVER); 
                     });
 
