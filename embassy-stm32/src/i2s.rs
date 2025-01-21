@@ -321,7 +321,6 @@ impl<'d, W: Word> I2S<'d, W> {
         sd: impl Peripheral<P = impl MisoPin<T>> + 'd,
         ws: impl Peripheral<P = impl WsPin<T>> + 'd,
         ck: impl Peripheral<P = impl CkPin<T>> + 'd,
-        mck: impl Peripheral<P = impl MckPin<T>> + 'd,
         rxdma: impl Peripheral<P = impl RxDma<T>> + 'd,
         rxdma_buf: &'d mut [W],
         freq: Hertz,
