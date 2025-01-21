@@ -5,7 +5,7 @@ use embassy_hal_internal::into_ref;
 use stm32_metapac::spi::vals;
 
 use crate::dma::{ringbuffer, ChannelAndRequest, ReadableRingBuffer, TransferOptions, WritableRingBuffer};
-use crate::gpio::{AfType, AnyPin, OutputType, SealedPin, Speed};
+use crate::gpio::{AfType, AnyPin, OutputType, Pull, SealedPin, Speed};
 use crate::mode::Async;
 use crate::spi::{Config as SpiConfig, RegsExt as _, *};
 use crate::time::Hertz;
